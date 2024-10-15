@@ -652,4 +652,42 @@ namespace DTVPDProject.ViewModels
     }
 }
 
+-----------------------------
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS1061	'Simulation' does not contain a definition for 'Id' and no accessible extension method 'Id' accepting a first argument of type 'Simulation' could be found (are you missing a using directive or an assembly reference?)	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\EFRepo\EFSimulationsRepo.cs	37	
+
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS1061	'Simulation' does not contain a definition for 'Notes' and no accessible extension method 'Notes' accepting a first argument of type 'Simulation' could be found (are you missing a using directive or an assembly reference?)	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\EFRepo\EFSimulationsRepo.cs	41	
+
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS1503	Argument 1: cannot convert from 'method group' to 'System.Action'	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\ViewModels\SimulationManagementViewModel.cs	45	
+
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS1503	Argument 1: cannot convert from 'method group' to 'System.Action'	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\ViewModels\SimulationManagementViewModel.cs	57	
+
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS0308	The non-generic type 'RelayCommand' cannot be used with type arguments	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\ViewModels\SimulationManagementViewModel.cs	69	
+
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS0246	The type or namespace name 'MyDbContext' could not be found (are you missing a using directive or an assembly reference?)	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\EFRepo\EFSimulationsRepo.cs	14	
+
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS0246	The type or namespace name 'MyDbContext' could not be found (are you missing a using directive or an assembly reference?)	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\EFRepo\EFSimulationsRepo.cs	16	
+
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS0246	The type or namespace name 'SimulationManagementViewModel' could not be found (are you missing a using directive or an assembly reference?)	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\Pages\SimulationManagementWindow.xaml.cs	26	
+
+
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS0246	The type or namespace name 'SimulationManagementViewModel' could not be found (are you missing a using directive or an assembly reference?)	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\Pages\SimulationManagementWindow.xaml.cs	32	
+
+
 

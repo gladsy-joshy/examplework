@@ -439,3 +439,24 @@ xaml
     </DataGridTemplateColumn.CellTemplate>
 </DataGridTemplateColumn>
 
+
+
+------------------------------------
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DTVPDProject.EFRepo;
+
+namespace DTVPDProject.Repo
+{
+    internal interface ISimulationsRepo
+    {
+    }
+}
+
+

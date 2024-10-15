@@ -911,4 +911,32 @@ namespace DTVPDProject.Pages
     }
 }
 
+-------------------
+
+using Microsoft.EntityFrameworkCore;
+using DTVPDProject;
+
+namespace DTVPDProject.EFRepo
+{
+    public class SimulationDbContext : DbContext
+    {
+        // DbSet represents the tables in your database
+        public DbSet<Simulation> Simulations { get; set; }
+        public DbSet<SimulationResult> SimulationResults { get; set; }
+
+        // Configuring the database connection
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            // Replace this connection string with your actual database details
+            optionsBuilder.UseSqlServer("Server=your_server;Database=YourDatabaseName;User Id=your_user;Password=your_password;");
+        }
+
+        // Optional: Configure relationships and constraints between models
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Fluent API configurations if needed (e.g., relationships between entities)
+        }
+    }
+}
+
 

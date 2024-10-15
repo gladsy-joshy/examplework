@@ -479,3 +479,177 @@ namespace DTVPDProject.EFRepo
 }
 
 
+-------------------------------------------------------
+
+
+isimulationrepo
+-----
+
+
+using System.Collections.ObjectModel;
+using DTVPDProject.Models;
+
+namespace DTVPDProject.Repo
+{
+    public interface ISimulationsRepo
+    {
+        ObservableCollection<Simulation> GetSimulations(); // Fetch all simulations
+        Simulation GetSimulationById(int id); // Fetch specific simulation by ID
+        void UpdateSimulation(Simulation simulation); // Update simulation details
+        void UpdateSimulationStatus(int id, string status); // Update the status of a specific simulation
+    }
+}
+
+
+-------------------------------
+
+
+efsimulationrepo
+-------------------------
+
+
+using System.Collections.ObjectModel;
+using System.Linq;
+using DTVPDProject.Models;
+using DTVPDProject.Repo;
+using DTVPDProject.EFRepo;
+
+namespace DTVPDProject.EFRepo
+{
+    public class EFSimulationsRepo : ISimulationsRepo
+    {
+        private readonly MyDbContext _context;
+
+        public EFSimulationsRepo(MyDbContext context)
+        {
+            _context = context;
+        }
+
+        // Fetch all simulations as an ObservableCollection
+        public ObservableCollection<Simulation> GetSimulations()
+        {
+            var simulations = _context.Simulations.ToList();
+            return new ObservableCollection<Simulation>(simulations);
+        }
+
+        // Fetch a specific simulation by ID
+        public Simulation GetSimulationById(int id)
+        {
+            return _context.Simulations.FirstOrDefault(s => s.Id == id);
+        }
+
+        // Update simulation details (like status or notes)
+        public void UpdateSimulation(Simulation simulation)
+        {
+            var existingSimulation = _context.Simulations.FirstOrDefault(s => s.Id == simulation.Id);
+            if (existingSimulation != null)
+            {
+                existingSimulation.Status = simulation.Status;
+                existingSimulation.Notes = simulation.Notes;
+                _context.SaveChanges();
+            }
+        }
+
+        // Update only the status of a simulation
+        public void UpdateSimulationStatus(int id, string status)
+        {
+            var existingSimulation = _context.Simulations.FirstOrDefault(s => s.Id == id);
+            if (existingSimulation != null)
+            {
+                existingSimulation.Status = status;
+                _context.SaveChanges();
+            }
+        }
+    }
+}
+------------------------------------------
+
+simulationviewmodel
+
+
+--------------------
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Input;
+using DTVPDProject.Models;
+using DTVPDProject.Repo;
+
+namespace DTVPDProject.ViewModels
+{
+    public class SimulationViewModel : INotifyPropertyChanged
+    {
+        private readonly ISimulationsRepo _repo;
+        private Simulation _selectedSimulation;
+        public ObservableCollection<Simulation> Simulations { get; set; }
+
+        // Property to bind to the selected item in the DataGrid
+        public Simulation SelectedSimulation
+        {
+            get => _selectedSimulation;
+            set
+            {
+                _selectedSimulation = value;
+                OnPropertyChanged(nameof(SelectedSimulation));
+            }
+        }
+
+        // Constructor to initialize the repository and load simulations
+        public SimulationViewModel(ISimulationsRepo repo)
+        {
+            _repo = repo;
+            LoadSimulations();
+        }
+
+        // Load all simulations into the ObservableCollection
+        private void LoadSimulations()
+        {
+            Simulations = _repo.GetSimulations();
+        }
+
+        // Command to start a simulation
+        public ICommand StartCommand => new RelayCommand(StartSimulation);
+
+        private void StartSimulation(object parameter)
+        {
+            if (SelectedSimulation != null)
+            {
+                SelectedSimulation.Status = "Started";
+                _repo.UpdateSimulation(SelectedSimulation);
+            }
+        }
+
+        // Command to stop a simulation
+        public ICommand StopCommand => new RelayCommand(StopSimulation);
+
+        private void StopSimulation(object parameter)
+        {
+            if (SelectedSimulation != null)
+            {
+                SelectedSimulation.Status = "Stopped";
+                _repo.UpdateSimulation(SelectedSimulation);
+            }
+        }
+
+        // Command to update the status to "Succeeded" or "Failed"
+        public ICommand UpdateStatusCommand => new RelayCommand<string>(UpdateStatus);
+
+        private void UpdateStatus(string status)
+        {
+            if (SelectedSimulation != null)
+            {
+                SelectedSimulation.Status = status;
+                _repo.UpdateSimulation(SelectedSimulation);
+            }
+        }
+
+        // INotifyPropertyChanged implementation
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}
+
+

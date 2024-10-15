@@ -255,3 +255,187 @@ namespace DTVPDProject.Repo
 
 
 C:\StressAnalysis
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+cs
+----
+
+
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using DTVPDProject.ViewModels;
+
+namespace DTVPDProject.Pages
+{
+    public partial class SimulationManagementWindow : Window
+    {
+        public SimulationManagementWindow()
+        {
+            InitializeComponent();
+            this.DataContext = new SimulationManagementViewModel();
+        }
+
+        private void RadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            var radioButton = sender as RadioButton;
+            var viewModel = DataContext as SimulationManagementViewModel;
+
+            if (radioButton != null && viewModel != null)
+            {
+                string status = radioButton.Tag.ToString();
+                viewModel.SelectedSimulation.Status = status;
+                // Update status in database
+                viewModel.UpdateStatus(viewModel.SelectedSimulation.Id, status);
+            }
+        }
+    }
+}
+
+
+---------------------------------------
+
+viewmodel
+--------------
+
+
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using DTVPDProject.Models;
+using DTVPDProject.Repository;
+
+namespace DTVPDProject.ViewModels
+{
+    public class SimulationManagementViewModel : INotifyPropertyChanged
+    {
+        private readonly SimulationRepository _simulationRepo;
+        private Simulation _selectedSimulation;
+
+        public ObservableCollection<Simulation> Simulations { get; set; }
+        public Simulation SelectedSimulation
+        {
+            get { return _selectedSimulation; }
+            set
+            {
+                _selectedSimulation = value;
+                OnPropertyChanged("SelectedSimulation");
+            }
+        }
+
+        public SimulationManagementViewModel()
+        {
+            _simulationRepo = new SimulationRepository();
+            Simulations = new ObservableCollection<Simulation>(_simulationRepo.GetSimulations());
+        }
+
+        public void StartSimulation(int simulationId)
+        {
+            var simulation = _simulationRepo.GetSimulationById(simulationId);
+            simulation.Status = "Started";
+            _simulationRepo.UpdateSimulation(simulation);
+            OnPropertyChanged("Simulations");
+        }
+
+        public void StopSimulation(int simulationId)
+        {
+            var simulation = _simulationRepo.GetSimulationById(simulationId);
+            simulation.Status = "Stopped";
+            _simulationRepo.UpdateSimulation(simulation);
+            OnPropertyChanged("Simulations");
+        }
+
+        public void UpdateStatus(int simulationId, string status)
+        {
+            var simulation = _simulationRepo.GetSimulationById(simulationId);
+            simulation.Status = status;
+            _simulationRepo.UpdateSimulation(simulation);
+            OnPropertyChanged("Simulations");
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}
+
+
+----------------------------------------
+
+
+repository
+-----------------
+
+
+using System.Collections.Generic;
+using System.IO;
+using DTVPDProject.Models;
+
+namespace DTVPDProject.Repository
+{
+    public class SimulationRepository
+    {
+        // Example data, replace this with actual database access code
+        public List<Simulation> GetSimulations()
+        {
+            string directoryPath = @"C:\StressAnalysis";
+            var simulations = new List<Simulation>();
+
+            foreach (var file in Directory.GetFiles(directoryPath, "*.png")) // assuming images are .png
+            {
+                simulations.Add(new Simulation
+                {
+                    Id = Path.GetFileNameWithoutExtension(file),
+                    ImagePath = file,
+                    Status = "Not Started",
+                    User = "User A"  // Placeholder user
+                });
+            }
+
+            return simulations;
+        }
+
+        public Simulation GetSimulationById(int id)
+        {
+            // Placeholder, return a simulation by its ID from the database
+            return new Simulation();
+        }
+
+        public void UpdateSimulation(Simulation simulation)
+        {
+            // Implement your database update logic here
+        }
+    }
+}
+---------------------------------
+
+
+xaml
+-------
+
+<DataGridTemplateColumn Header="Image" Width="100">
+    <DataGridTemplateColumn.CellTemplate>
+        <DataTemplate>
+            <Image Source="{Binding ImagePath}" Width="50" Height="50"/>
+        </DataTemplate>
+    </DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>
+

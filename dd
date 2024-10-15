@@ -1,0 +1,14 @@
+Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS0121	The call is ambiguous between the following methods or properties: 'EFSimulationsRepo.EFSimulationsRepo(MyDbContext)' and 'EFSimulationsRepo.EFSimulationsRepo(MyDbContext)'	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\Pages\SimulationManagementWindow.xaml.cs	28	
+
+
+  Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS0246	The type or namespace name 'DbContextOptionsBuilder' could not be found (are you missing a using directive or an assembly reference?)	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\Pages\MyDbContext.cs	17	
+
+
+  Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS0246	The type or namespace name 'ModelBuilder' could not be found (are you missing a using directive or an assembly reference?)	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\Pages\MyDbContext.cs	24	
+
+
+  Severity	Code	Description	Project	File	Line	Suppression State
+Error (active)	CS0111	Type 'EFSimulationsRepo' already defines a member called 'EFSimulationsRepo' with the same parameter types	DTVPDProject	C:\Users\2021470\C2504_cs\c2504_cs\dtvpd\DTVPDProjectsln\DTVPDProject\EFRepo\EFSimulationsRepo.cs	23	

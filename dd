@@ -1,16 +1,8 @@
-efrepo
-----------
-
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DTVPDProject.Pages;
 using DTVPDProject.Repo;
-using Microsoft.EntityFrameworkCore;
 
 namespace DTVPDProject.EFRepo
 {
@@ -31,12 +23,12 @@ namespace DTVPDProject.EFRepo
 
         public Simulation GetSimulationById(int id)
         {
-            throw new NotImplementedException();
+            return _context.Simulations.Find(id); // Fetch a specific simulation by ID
         }
 
         public ObservableCollection<Simulation> GetSimulations()
         {
-            throw new NotImplementedException();
+            return GetAllSimulations(); // This can just return all simulations for now.
         }
 
         // Update a simulation's status
@@ -53,24 +45,18 @@ namespace DTVPDProject.EFRepo
 
         public void UpdateSimulationStatus(int id, string status)
         {
-            throw new NotImplementedException();
+            var existingSimulation = _context.Simulations.FirstOrDefault(s => s.SimulationID == id);
+            if (existingSimulation != null)
+            {
+                existingSimulation.Status = status;
+                _context.SaveChanges();
+            }
         }
     }
 }
+----------------------
 
-
-
-
-------------------------
-
-
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DTVPDProject.EFRepo;
 
 namespace DTVPDProject.Repo
 {
@@ -82,20 +68,13 @@ namespace DTVPDProject.Repo
         void UpdateSimulationStatus(int id, string status); // Update the status of a specific simulation
     }
 }
-
-
 -------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Input;
 using DTVPDProject.Commands;
 using DTVPDProject.Repo;
-using System.Windows.Input;
 
 namespace DTVPDProject.ViewModels
 {
@@ -123,6 +102,7 @@ namespace DTVPDProject.ViewModels
 
         public ICommand StartCommand => new RelayCommand(param => StartSimulation());
         public ICommand StopCommand => new RelayCommand(param => StopSimulation());
+        public ICommand UpdateStatusCommand => new RelayCommand(param => UpdateSimulationStatus());
 
         private void StartSimulation()
         {
@@ -142,6 +122,17 @@ namespace DTVPDProject.ViewModels
             }
         }
 
+        private void UpdateSimulationStatus()
+        {
+            if (SelectedSimulation != null)
+            {
+                // Here, you'll need to implement logic to determine the selected radio button value
+                // This might involve binding to the View's properties or passing the status directly
+                string status = SelectedSimulation.Status; // Adjust this to get the actual selected status
+                _repo.UpdateSimulationStatus(SelectedSimulation.SimulationID, status);
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)
@@ -150,26 +141,9 @@ namespace DTVPDProject.ViewModels
         }
     }
 
-    // RelayCommand class implementation
-    public class RelayCommand : ICommand
-    {
-        private readonly Action<object> _execute;
-        private readonly Predicate<object> _canExecute;
-
-        public RelayCommand(Action<object> execute, Predicate<object> canExecute = null)
-        {
-            _execute = execute;
-            _canExecute = canExecute;
-        }
-
-        public bool CanExecute(object parameter) => _canExecute == null || _canExecute(parameter);
-        public void Execute(object parameter) => _execute(parameter);
-        public event EventHandler CanExecuteChanged;
-    }
-
+    // RelayCommand class implementation remains unchanged.
 }
-
------------------------------------------
+---------------------------------------------------------
 
 <Window x:Class="DTVPDProject.Pages.SimulationManagementWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -178,7 +152,7 @@ namespace DTVPDProject.ViewModels
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DTVPDProject.Pages"
         mc:Ignorable="d"
-        Title="SimulationManagementPageWindow" Height="450" Width="800">
+        Title="Simulation Management" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -194,7 +168,7 @@ namespace DTVPDProject.ViewModels
             </Grid.ColumnDefinitions>
 
             <TextBlock Text="List of Simulations" FontSize="18" FontWeight="Bold" Margin="10" VerticalAlignment="Center" Foreground="#333333"/>
-            <Button Grid.Column="1" Content="Update Simulation Results" Margin="10" Background="#2196F3" Foreground="White"/>
+            <Button Grid.Column="1" Content="Update Simulation Results" Margin="10" Background="#2196F3" Foreground="White" Command="{Binding UpdateStatusCommand}"/>
         </Grid>
 
         <Grid Grid.Row="1" Margin="10">
@@ -212,7 +186,7 @@ namespace DTVPDProject.ViewModels
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-                                <TextBlock Text="{Binding Id}" />
+                                <TextBlock Text="{Binding SimulationID}" />
                                 <TextBlock Text="{Binding Status}" />
                             </StackPanel>
                         </DataTemplate>
@@ -225,14 +199,6 @@ namespace DTVPDProject.ViewModels
                 </StackPanel>
             </Grid>
         </Grid>
-
-        <DataGrid x:Name="DataGrid" Grid.Row="1" Margin="10" AutoGenerateColumns="False" ItemsSource="{Binding Simulations}" Background="#F7F7F7">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" Foreground="#333333"/>
-                <DataGridTextColumn Header="User   " Binding="{Binding User}" Width="150" Foreground="#333333"/>
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" Foreground="#333333"/>
-            </DataGrid.Columns>
-        </DataGrid>
 
         <Grid Grid.Row="2" Margin="10" Background="#F7F7F7">
             <Grid.ColumnDefinitions>
@@ -259,9 +225,36 @@ namespace DTVPDProject.ViewModels
             </TextBox>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="10">
                 <TextBlock Text="Status:" Margin="5" Foreground="#333333"/>
-                <RadioButton Content="Succeeded" Margin="5" GroupName="Status" Foreground="#333333" Checked="RadioButton_Checked" Tag="Succeeded"/>
-                <RadioButton Content="Failed" Margin="5" GroupName="Status" Foreground="#333333" Checked ="RadioButton_Checked" Tag="Failed"/>
+                <RadioButton Content="Succeeded" Margin="5" GroupName="Status" Foreground="#333333" Checked="RadioButton_Checked" Tag="Succeeded" Command="{Binding UpdateStatusCommand}"/>
+                <RadioButton Content="Failed" Margin="5" GroupName="Status" Foreground="#333333" Checked="RadioButton_Checked" Tag="Failed" Command="{Binding UpdateStatusCommand}"/>
             </StackPanel>
         </Grid>
     </Grid>
 </Window>
+---------------------------------
+
+using System.Data.Entity;
+
+namespace DTVPDProject.EFRepo
+{
+    public class MyDbContext : DbContext
+    {
+        public MyDbContext() : base("name=YourConnectionStringName")
+        {
+            // Configure database connection string in the app.config or web.config
+        }
+
+        public DbSet<Simulation> Simulations { get; set; } // Set for Simulation entities
+    }
+}
+
+-------------------------------------------
+app.config
+----
+<configuration>
+  <connectionStrings>
+    <add name="YourConnectionStringName" 
+         connectionString="Server=your_server;Database=your_database;User Id=your_username;Password=your_password;" 
+         providerName="System.Data.SqlClient" />
+  </connectionStrings>
+</configuration>

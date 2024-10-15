@@ -1,0 +1,251 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using DTVPDProject.EFRepo;
+using DTVPDProject.ViewModels;
+
+namespace DTVPDProject.Pages
+{
+    /// <summary>
+    /// Interaction logic for SimulationManagementPageWindow.xaml
+    /// </summary>
+public partial class SimulationManagementWindow : Window
+    {
+        public SimulationManagementWindow()
+        {
+            InitializeComponent();
+            var context = new MyDbContext();  // Assumes MyDbContext is configured correctly
+            var repo = new EFSimulationsRepo(context);
+            this.DataContext = new SimulationManagementViewModel(repo);
+        }
+
+        // Event handler for RadioButton Checked event
+        private void RadioButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (sender is RadioButton radioButton && radioButton.Tag != null)
+            {
+                string status = radioButton.Tag.ToString();
+                // Assuming you have a method in your ViewModel to handle the status update
+                var viewModel = DataContext as SimulationManagementViewModel;
+                viewModel?.UpdateSimulationStatus(status);
+            }
+        }
+    }
+}
+
+-----------------
+
+using System;
+using System.Collections.ObjectModel;
+using System.Data.Entity;
+using System.Linq;
+using DTVPDProject.Pages;
+using DTVPDProject.Repo;
+
+namespace DTVPDProject.EFRepo
+{
+    public class EFSimulationsRepo : ISimulationsRepo
+    {
+        private readonly MyDbContext _context;
+
+        public EFSimulationsRepo(MyDbContext context)
+        {
+            _context = context;
+        }
+
+        // Fetch all simulations
+        public ObservableCollection<Simulation> GetAllSimulations()
+        {
+            return new ObservableCollection<Simulation>(_context.Simulations.ToList());
+        }
+
+        public Simulation GetSimulationById(int id)
+        {
+            return _context.Simulations.Find(id); // Fetch a specific simulation by ID
+        }
+
+        public ObservableCollection<Simulation> GetSimulations()
+        {
+            return GetAllSimulations(); // This can just return all simulations for now.
+        }
+
+        // Update a simulation's status
+        public void UpdateSimulation(Simulation simulation)
+        {
+            var existingSimulation = _context.Simulations.FirstOrDefault(s => s.SimulationID == simulation.SimulationID);
+            if (existingSimulation != null)
+            {
+                existingSimulation.Status = simulation.Status;
+                existingSimulation.UpdatedAt = DateTime.Now;
+                _context.SaveChanges();
+            }
+        }
+
+        public void UpdateSimulationStatus(int id, string status)
+        {
+            var existingSimulation = _context.Simulations.FirstOrDefault(s => s.SimulationID == id);
+            if (existingSimulation != null)
+            {
+                existingSimulation.Status = status;
+                _context.SaveChanges();
+            }
+        }
+    }
+}
+---------------------
+using System.Collections.ObjectModel;
+
+namespace DTVPDProject.Repo
+{
+    public interface ISimulationsRepo
+    {
+        ObservableCollection<Simulation> GetSimulations(); // Fetch all simulations
+        Simulation GetSimulationById(int id); // Fetch specific simulation by ID
+        void UpdateSimulation(Simulation simulation); // Update simulation details
+        void UpdateSimulationStatus(int id, string status); // Update the status of a specific simulation
+        ObservableCollection<Simulation> GetAllSimulations();
+    }
+}
+-----------------------------
+
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Input;
+using DTVPDProject.Commands;
+using DTVPDProject.Repo;
+
+namespace DTVPDProject.ViewModels
+{
+    public class SimulationManagementViewModel : INotifyPropertyChanged
+    {
+        private readonly ISimulationsRepo _repo;
+        public ObservableCollection<Simulation> Simulations { get; set; }
+        private Simulation _selectedSimulation;
+
+        public SimulationManagementViewModel(ISimulationsRepo repo)
+        {
+            _repo = repo;
+            Simulations = _repo.GetAllSimulations(); // Fetch simulations
+        }
+
+        public Simulation SelectedSimulation
+        {
+            get => _selectedSimulation;
+            set
+            {
+                _selectedSimulation = value;
+                OnPropertyChanged(nameof(SelectedSimulation));
+            }
+        }
+
+        public ICommand StartCommand => new RelayCommand(StartSimulation);
+        public ICommand StopCommand => new RelayCommand(StopSimulation);
+        public ICommand UpdateStatusCommand => new RelayCommand(UpdateSimulationStatus);
+
+        private void StartSimulation()
+        {
+            if (SelectedSimulation != null)
+            {
+                SelectedSimulation.Status = "Started";
+                _repo.UpdateSimulation(SelectedSimulation);
+            }
+        }
+
+        private void StopSimulation()
+        {
+            if (SelectedSimulation != null)
+            {
+                SelectedSimulation.Status = "Stopped";
+                _repo.UpdateSimulation(SelectedSimulation);
+            }
+        }
+
+        private void UpdateSimulationStatus()
+        {
+            if (SelectedSimulation != null)
+            {
+                // Here, you'll need to implement logic to determine the selected radio button value
+                // This might involve binding to the View's properties or passing the status directly
+                string status = SelectedSimulation.Status; // Adjust this to get the actual selected status
+                _repo.UpdateSimulationStatus(SelectedSimulation.SimulationID, status);
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        internal void UpdateSimulationStatus(string status)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    // RelayCommand class implementation remains unchanged.
+}
+--------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DTVPDProject.Pages;
+using DTVPDProject.ViewModels;
+
+namespace DTVPDProject
+{
+    public static class FormConfig
+    {
+        public static CollaborationWindow collaborationWindow = null;
+        public static DataManagementWindow dataManagementWindow = null;
+        public static DesignIterationWindow designIterationWindow = null;   
+        public static DigitalTwinCreationWindow digitalTwinCreationWindow = null;
+        public static FeedbackWindow feedbackWindow = null;
+        public static HelpandSupportWindow helpandSupportWindow = null;
+        public static HomeDashboardWindow homeDashboardWindow = null;
+        public static PerformanceAnalysisWindow performanceAnalysisWindow = null;
+        public static SettingsWindow settingsWindow = null;
+        public static SimulationManagementWindow simulationManagementWindow = null;
+        public static UserManagementWindow userManagementWindow = null;
+        public static ActiveSimulationWindow activeSimulationWindow = null;
+        public static PerformanceIndicators performanceIndicators = null;
+        public static RecentUpdateWindow recentUpdateWindow = null;
+       // public static SimulationManagementViewModel simulationManagementViewModel = null;
+
+
+
+        static FormConfig() 
+        {
+            //simulationManagementViewModel = new SimulationManagementViewModel();
+            collaborationWindow = new CollaborationWindow();
+            dataManagementWindow = new DataManagementWindow();
+            designIterationWindow = new DesignIterationWindow();
+            digitalTwinCreationWindow = new DigitalTwinCreationWindow();
+            feedbackWindow = new FeedbackWindow();
+            helpandSupportWindow = new HelpandSupportWindow();
+            homeDashboardWindow = new HomeDashboardWindow();
+            performanceAnalysisWindow = new PerformanceAnalysisWindow();
+            settingsWindow = new SettingsWindow();
+            simulationManagementWindow = new SimulationManagementWindow();
+            userManagementWindow = new UserManagementWindow();
+            activeSimulationWindow = new ActiveSimulationWindow();
+            performanceIndicators = new PerformanceIndicators();
+            recentUpdateWindow = new RecentUpdateWindow();
+        }
+    }
+}
